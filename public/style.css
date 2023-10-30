@@ -1,0 +1,176 @@
+/* Reset */
+body, h1, p, table {
+    margin: 0;
+    padding: 0;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Roboto', sans-serif; /* Changed font */
+    background-color: #202020; /* Slightly darker background */
+    color: #FFF; /* White text */
+    /* height: 100vh; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #151515; /* Darker header */
+    text-align: center;
+    padding: 10px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* Added shadow */
+}
+
+.content {
+    margin: 60px 20px 20px 20px; /* Adjusted for header */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5); /* Subtle shadow for depth */
+}
+
+button {
+    background-color: #007BFF;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    color: #FFF;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+button:hover {
+    background-color: #005cbf;
+    transform: scale(1.05); /* Slight growth on hover */
+}
+
+.container {
+    margin-top: 20px;
+    /* overflow-x: auto; */
+}
+
+table {
+    max-height: 400px; /* Adjust as per your need */
+    overflow-y: auto; /* Show vertical scroll if content overflows */
+}
+thead {
+    margin: 60px 20px 20px 20px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    position: sticky; /* This will make the header sticky */
+    top: 0; /* Align the sticky header to the top */
+    z-index: 1; /* Ensure the header is above the tbody content */
+}
+
+/* Existing table style */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #151515;
+    table-layout: fixed;
+}
+
+/* Updated thead style */
+th {
+    background-color: #151515;
+    color:white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 1%;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #303030; /* Matching border color */
+    margin: 20px 0;
+}
+
+/* Input Styles */
+input, select {
+    width: -webkit-fill-available;
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid #303030;
+    background-color: #151515;
+    color: #FFF;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: #007BFF;
+}
+
+/* Delete Button */
+.delete-btn {
+    background-color: transparent;
+    border: 1px solid #e63946;
+    color: #e63946;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.delete-btn:hover {
+    background-color: #e63946;
+    color: #fff;
+}
+
+.scrollable-table {
+    /* max-height: calc(100vh - 150px); */
+    /* overflow-y: auto; */
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for effect */
+}
+
+#saveButton{
+    margin-top: 1%;
+    float: right;
+}
+
+tr th, 
+tr td {
+    text-align: center;
+}
+
+tr {
+    transition: background-color 0.1s;
+}
+
+tr:hover {
+    background-color: #222222;
+    transition: 100ms;
+}
+
+
+#item-select input {
+    width: -webkit-fill-available;
+}
+
+.notification {
+    position: fixed;
+    top: -100px;
+    left: 0;
+    right: 0;
+    width: 50%;
+    margin: auto;
+    background-color: #1f1f1f;
+    /* border-color: #007BFF; */
+    border: 1px solid #007BFF;
+    color: white;
+    text-align: center;
+    border-radius: 2rem;
+    padding: 16px;
+    font-size: 20px;
+    z-index: 9999;
+    transition: top 0.5s;
+}
+
+.notification.show {
+    top: 0;
+}

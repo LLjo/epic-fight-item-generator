@@ -1,0 +1,217 @@
+{
+    "axe": { 
+        "type": "One-Handed", 
+        "matches": ["axe"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1.2,
+				"max_strikes": 0
+			},
+			"two_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1.2,
+				"max_strikes": 0
+			}
+		}
+    },
+    "fist": { 
+        "type": "Dual Wielding", 
+        "matches": ["fist", "knuckles"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 0.2,
+				"max_strikes": 0
+			}
+		}
+    },
+    "hoe": { 
+        "type": "One-Handed", 
+        "matches": ["hoe"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 0.4,
+				"max_strikes": 0
+			}
+		}
+    },
+    "pickaxe": { 
+        "type": "One-Handed", 
+        "matches": ["pickaxe"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 0.7,
+				"max_strikes": 0
+			}
+		}
+    },
+    "shovel": { 
+        "type": "One-Handed", 
+        "matches": ["shovel"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 0.5,
+				"max_strikes": 0
+			}
+		}
+    },
+    "sword": { 
+        "type": "Dual Wielding", 
+        "matches": ["sword", "scimitar"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1,
+				"max_strikes": 0
+			}
+		}
+    },
+    "spear": { 
+        "type": "One-Handed/Two-Handed", 
+        "matches": ["spear", "staff"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1.4,
+				"max_strikes": 0
+			}
+		}
+    },
+    "greatsword": { 
+        "type": "Two-Handed", 
+        "matches": ["greatsword"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 2,
+				"max_strikes": 0
+			}
+		}
+    },
+    "uchigatana": { 
+        "type": "Two-Handed", 
+        "matches": ["uchigatana"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1.3,
+				"max_strikes": 0
+			}
+		}
+    },
+    "tachi": { 
+        "type": "Two-Handed", 
+        "matches": ["tachi"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1.2,
+				"max_strikes": 0
+			}
+		}
+    },
+    "longsword": { 
+        "type": "Two-Handed", 
+        "matches": ["longsword"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1.5,
+				"max_strikes": 0
+			}
+		}
+    },
+    "dagger": { 
+        "type": "Dual Wielding", 
+        "matches": ["dagger", "knife", "fork"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 0.3,
+				"max_strikes": 0
+			}
+		}
+    },
+    "bow": { 
+        "type": "Two-Handed", 
+        "matches": ["bow"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1,
+				"max_strikes": 0
+			}
+		}
+    },
+    "crossbow": { 
+        "type": "Two-Handed", 
+        "matches": ["crossbow"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 2,
+				"max_strikes": 0
+			}
+		}
+    },
+    "trident": { 
+        "type": "One-Handed", 
+        "matches": ["trident"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 2.5,
+				"max_strikes": 0
+			}
+		}
+    },
+    "shield": { 
+        "type": "Dual Wielding", 
+        "matches": ["shield", "buckler"],
+		"attributes": {
+			"one_hand": {
+				"damage_bonus": 0,
+				"speed_bonus": 0,
+				"armor_negation": 0,
+				"impact": 1,
+				"max_strikes": 0
+			}
+		}
+    }
+}
