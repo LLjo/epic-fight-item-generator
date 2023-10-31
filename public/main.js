@@ -2,7 +2,13 @@ class App {
     constructor() {
         this.items = [];
         this.weaponTypes = {};
-        $('#jsonInput').on('change', this.loadItemsFromFile.bind(this));
+        const self = this
+        
+        $('#loadButton').off('click').on('click', async () => {
+            if (selectedFile) {
+                await self.loadItemsFromFile(currentPath, selectedFile);
+            }
+        });
         $('#saveButton').on('click', this.saveData.bind(this));
     }
 
@@ -205,28 +211,34 @@ class App {
             }
         });
     }
-    async loadItemsFromFile() {
-        const file = $('#jsonInput').prop('files')[0];
-        if (!file) return;
-
+    async loadItemsFromFile(directory, fileName) {
+        if (!fileName) return;
+        const $loader = addLoader($('#tableBody tr td:first'))
+    
         try {
             const response = await $.ajax({
                 url: '/findFile',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ filename: file.name })
+                data: JSON.stringify({ filepath: directory, filename: fileName})
             });
-
+    
             if (response.success) {
-                this.items = response.items;
-                this.weaponTypes = response.weaponTypes;
-                this.loadWeaponDefaults(); // add this
-                this.loadData();
+                showNotification('Files successfully loaded!');
+                app.items = response.items;
+                app.weaponTypes = response.weaponTypes;
+                app.loadWeaponDefaults();
+                app.loadData();
+            } else {
+                showNotification('Something went wrong trying to find data from the selected file. Is the file a json file inside a lang folder?', 5000);
             }
         } catch (error) {
             console.error('Error loading items from file:', error);
+        } finally {
+            $loader.remove();
         }
     }
+    
 
     loadData() {
         const $tableBody = $('#tableBody').empty();
@@ -346,46 +358,11 @@ async function loadDirectoryContent(directory = '/items') {
             $nav.append($fileElem);
         });
 
-        $('#loadButton').off('click').on('click', async () => {
-            if (selectedFile) {
-                await loadItemsFromFile(currentPath, selectedFile);
-            }
-        });
-        
-        
-
     } catch (error) {
         console.error('Error loading directory content:', error);
     }
 }
 
-async function loadItemsFromFile(directory, fileName) {
-    if (!fileName) return;
-    const $loader = addLoader($('#tableBody tr td:first'))
-
-    try {
-        const response = await $.ajax({
-            url: '/findFile',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ filepath: directory, filename: fileName})
-        });
-
-        if (response.success) {
-            showNotification('Files successfully loaded!');
-            app.items = response.items;
-            app.weaponTypes = response.weaponTypes;
-            app.loadWeaponDefaults();
-            app.loadData();
-        } else {
-            showNotification('Something went wrong trying to find data from the selected file. Is the file a json file inside a lang folder?', 5000);
-        }
-    } catch (error) {
-        console.error('Error loading items from file:', error);
-    } finally {
-        $loader.remove();
-    }
-}
 
 function addLoader($target) {
     const $spinner = $('<div id="spinner" class="spinner"></div>')
