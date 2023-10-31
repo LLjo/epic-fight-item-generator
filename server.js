@@ -31,9 +31,6 @@ const loadLatestWeaponTypes = () => {
     return JSON.parse(fs.readFileSync(`./default_types/${latestFile}`, 'utf-8'));
 };
 
-// Load the latest weaponTypes when server starts
-// const weaponTypes = loadLatestWeaponTypes();
-
 let parentDir;
 
 app.use(express.static('public'), bodyParser.json());
@@ -90,7 +87,6 @@ app.post('/findFile', async (req, res) => {
         
         let matchedWeapon = defaultWeapon;
         for (const [weapon, details] of Object.entries(weaponTypes)) {
-            console.log('items', details)
             if (details.matches.some(match => value.toLowerCase().includes(match))) {
                 matchedWeapon = weapon;
                 break;
@@ -106,7 +102,6 @@ app.post('/findFile', async (req, res) => {
         };
     }
 
-    console.log(processedItems)
     res.json({
         success: true,
         items: processedItems,
