@@ -5,6 +5,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const fsExtra = require('fs-extra');
 const open  = require('open');
+const archiver = require('archiver');
 
 const app = express();
 const PORT = 3000;
@@ -145,6 +146,33 @@ app.post('/saveData', (req, res) => {
 
     // Write the content to the new file
     fs.writeFileSync(additionalFilePath, JSON.stringify(additionalJSONContent, null, 4));  // 4 spaces indentation
+
+    const output = fs.createWriteStream(path.join(rootSavePath, '..', `${parentDir.split("\\")[1]}-weapons-${currentDateTime}.zip`));
+    const archive = archiver('zip', {
+        zlib: { level: 9 } // Level 9 is the highest compression
+    });
+
+    output.on('close', function() {
+        console.log('ZIP has been finalized and the output file descriptor has closed.');
+        res.json({ success: true });
+    });
+
+    archive.on('error', function(err) {
+        console.error('Error while creating ZIP:', err);
+        res.status(500).send('Error creating ZIP archive');
+    });
+
+    // pipe archive data to the output file
+    archive.pipe(output);
+
+    // append the "data" folder to the ZIP
+    archive.directory(rootSavePath, false);
+
+    // append the "pack.mcmeta" file to the ZIP
+    archive.file(additionalFilePath, { name: 'pack.mcmeta' });
+
+    // finalize the ZIP creation
+    archive.finalize();
     
     res.json({ success: true });
 });
