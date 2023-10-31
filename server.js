@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const fs = require('fs');
+const fsOriginal = require('fs');
+const fsp = fsOriginal.promises;
 const path = require('path');
 const bodyParser = require('body-parser');
 const fsExtra = require('fs-extra');
@@ -10,109 +11,122 @@ const archiver = require('archiver');
 const app = express();
 const PORT = 3000;
 
-// Ensure the default_types directory exists
-if (!fs.existsSync('./default_types')) {
-    fs.mkdirSync('./default_types');
-}
+let parentDir;
 
-const loadLatestWeaponTypes = () => {
-    const files = fs.readdirSync('./default_types').filter(file => file.startsWith('weaponDefaults_'));
-    
-    // If there are no files, return an empty object or a default object if you have it
+fsp.access('./default_types')
+    .catch(() => fsp.mkdir('./default_types'));
+
+app.use(express.static('public'), bodyParser.json());
+
+const loadLatestWeaponTypes = async () => {
+    const files = await fsp.readdir('./default_types').then(files => files.filter(file => file.startsWith('weaponDefaults_')));
+
     if (files.length === 0) return {};
 
-    // Sort the files based on timestamp and get the latest
     const latestFile = files.sort((a, b) => {
         const timestampA = parseInt(a.split('_')[1].split('.json')[0], 10);
         const timestampB = parseInt(b.split('_')[1].split('.json')[0], 10);
         return timestampB - timestampA;
     })[0];
 
-    return JSON.parse(fs.readFileSync(`./default_types/${latestFile}`, 'utf-8'));
+    const fileContents = await fsp.readFile(`./default_types/${latestFile}`, 'utf-8');
+    return JSON.parse(fileContents);
 };
 
-let parentDir;
 
-app.use(express.static('public'), bodyParser.json());
 
-const findTextureInDir = (startPath, filter, isRecursive = false) => {
+const findTextureInDir = async (startPath, filter, isRecursive = false) => {
     let results = [];
-    console.log('dir', startPath)
-    fs.readdirSync(startPath).forEach(dir => {
-        const filePath = path.join(startPath, dir);
-        const stat = fs.statSync(filePath);
-        if (stat && stat.isDirectory() && isRecursive) {
-            results = results.concat(findTextureInDir(filePath, filter, isRecursive));
-        } else if (filePath.endsWith(filter)) {
-            results.push(filePath);
+    try {
+        const dirs = await fsp.readdir(startPath);
+        for (const dir of dirs) {
+            const filePath = path.join(startPath, dir);
+            const stat = await fsp.stat(filePath);
+            if (stat && stat.isDirectory() && isRecursive) {
+                results = results.concat(await findTextureInDir(filePath, filter, isRecursive));
+            } else if (filePath.endsWith(filter)) {
+                results.push(filePath);
+            }
         }
-    });
+
+    } catch (err) { 
+        results = []
+    }
     return results;
-}
+};
 
 
 app.post('/findFile', async (req, res) => {
-    const weaponTypes = loadLatestWeaponTypes();
-    if (!req.body.filename) {
-        return res.status(400).send('Filename not provided');
+    const weaponTypes = await loadLatestWeaponTypes();
+    const { filepath, filename, currentmod } = req.body;
+    if (!filename || !filepath) {
+        return res.status(400).send('Filepath or Filename not provided');
     }
-
-    const findFileInDir = (startPath, filter) => {
+    
+    // Combine the script directory with the relative path received from the frontend
+    const absoluteFilePath = path.join(__dirname, filepath);
+    const findFileInDir = async (startPath, filter) => {
         let result = null;
-        fs.readdirSync(startPath).forEach(dir => {
+        const dirs = await fsp.readdir(startPath);
+        for (const dir of dirs) {
             const filePath = path.join(startPath, dir);
-            const stat = fs.statSync(filePath);
+            const stat = await fsp.stat(filePath);
             if (stat && stat.isDirectory()) {
-                result = result || findFileInDir(filePath, filter);
+                result = result || await findFileInDir(filePath, filter);
             } else if (dir === filter) {
                 result = filePath;
             }
-        });
+        }
         return result;
     }
 
-    const foundFilePath = findFileInDir('./items', req.body.filename);
+    const foundFilePath = await findFileInDir(absoluteFilePath, filename);
     if (!foundFilePath) {
-        return res.status(404).send('File not found in /items directory');
+        return res.status(404).send(`File not found in ${absoluteFilePath} directory`);
     }
 
     parentDir = path.dirname(path.dirname(foundFilePath)); 
     const texturesDir = path.join(parentDir, 'textures');
 
-    let texturePaths = findTextureInDir(texturesDir, ".png", true); 
-
-    const items = JSON.parse(fs.readFileSync(foundFilePath, 'utf8'));
+    const texturePaths = await findTextureInDir(texturesDir, ".png", true); 
+    const items = JSON.parse(await fsp.readFile(foundFilePath, 'utf8'));
     const processedItems = {};
-    const defaultWeapon = Object.keys(weaponTypes)[0];  // Gets the first weapon key from weaponTypes
-    const defaultType = weaponTypes[defaultWeapon].type;  // Gets the type of the first weapon
-    
-    for (const [key, value] of Object.entries(items)) {
-        const identifier = key.split('.').pop();
-        const textureFilePath = texturePaths.find(texPath => path.basename(texPath, '.png') === identifier);
+    const defaultWeapon = Object.keys(weaponTypes)[0];
+    const defaultType = weaponTypes[defaultWeapon].type;
 
-        // Convert image to base64
-        let textureBase64 = null;
-        if (textureFilePath) {
-            const imageBuffer = await fsExtra.readFile(textureFilePath);
-            textureBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
-        }
-        
-        let matchedWeapon = defaultWeapon;
-        for (const [weapon, details] of Object.entries(weaponTypes)) {
-            if (details.matches.some(match => value.toLowerCase().includes(match))) {
-                matchedWeapon = weapon;
-                break;
+    try {
+        for (const [key, value] of Object.entries(items)) {
+            const identifier = key.split('.').pop();
+            const textureFilePath = texturePaths.find(texPath => path.basename(texPath, '.png') === identifier);
+            let textureBase64 = null;
+            if (textureFilePath) {
+                const imageBuffer = await fsExtra.readFile(textureFilePath);
+                textureBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
             }
+            let matchedWeapon = defaultWeapon;
+            for (const [weapon, details] of Object.entries(weaponTypes)) {
+                if (details.matches.some(match => value.toLowerCase().includes(match))) {
+                    matchedWeapon = weapon;
+                    break;
+                }
+            }
+            processedItems[value] = {
+                texture: textureBase64  || 'No texture',
+                type: weaponTypes[matchedWeapon].type || defaultType,
+                weapon: matchedWeapon,
+                attributes: weaponTypes[matchedWeapon].attributes,
+                fileName: identifier,
+            };
         }
-    
-        processedItems[value] = {
-            texture: textureBase64  || 'No texture',
-            type: weaponTypes[matchedWeapon].type || defaultType,
-            weapon: matchedWeapon,
-            attributes: weaponTypes[matchedWeapon].attributes,
-            fileName: identifier,
-        };
+    } catch (err) {
+        return res.json({
+            success: false,
+            items: processedItems,
+            weaponTypes: weaponTypes,
+            message: err.message,
+        });
     }
+
 
     res.json({
         success: true,
@@ -124,20 +138,39 @@ app.post('/findFile', async (req, res) => {
 
 
 
-
-app.post('/saveData', (req, res) => {
+app.post('/saveData', async (req, res) => {
     const currentDateTime = String((new Date()).getTime());
-    const rootSavePath = `${parentDir}-${currentDateTime}/data`
-    const weaponsSavePath = path.join(rootSavePath, `${parentDir.split("\\")[1]}/capabilities/weapons`);
-
-    if (!fs.existsSync(weaponsSavePath)) {
-        fs.mkdirSync(weaponsSavePath, { recursive: true });
-    }
+    
+    
     const data = req.body;
+    const outputData = data.output
+    const currentMod = data.currentmod
+    const modDataPackSaveDir = path.join(__dirname, 'data_pack_output', currentMod)
+    // Save to the project's /data_pack_output folder
 
-    for (const [itemName, itemData] of Object.entries(data)) {
+    try {
+        await fsp.access(currentMod);
+        // File or directory exists
+    } catch (error) {
+        await fsp.mkdir(modDataPackSaveDir, { recursive: true });
+        // File or directory doesn't exist
+    } 
+
+
+    const rootSavePath = path.join(modDataPackSaveDir, `${currentMod}-${currentDateTime}/data`);
+    const weaponsSavePath = path.join(rootSavePath, `${currentMod}/capabilities/weapons`);
+    
+    try {
+        await fsp.access(rootSavePath);
+        // File or directory exists
+    } catch (error) {
+        await fsp.mkdir(weaponsSavePath, { recursive: true });
+        // File or directory doesn't exist
+    } 
+    
+    for (const [itemName, itemData] of Object.entries(outputData)) {
         const filePath = path.join(weaponsSavePath, `${itemName}.json`);
-        fs.writeFileSync(filePath, JSON.stringify(itemData, null, 4));  // 4 spaces indentation
+        await fsp.writeFile(filePath, JSON.stringify(itemData, null, 4));  // 4 spaces indentation
     }
 
     // Create the additional JSON content
@@ -152,9 +185,9 @@ app.post('/saveData', (req, res) => {
     const additionalFilePath = path.join(rootSavePath, '..', 'pack.mcmeta');
 
     // Write the content to the new file
-    fs.writeFileSync(additionalFilePath, JSON.stringify(additionalJSONContent, null, 4));  // 4 spaces indentation
+    await fsp.writeFile(additionalFilePath, JSON.stringify(additionalJSONContent, null, 4));  // 4 spaces indentation
 
-    const output = fs.createWriteStream(path.join(rootSavePath, '..', `${parentDir.split("\\")[1]}-weapons-${currentDateTime}.zip`));
+    const output = fsOriginal.createWriteStream(path.join(rootSavePath, '..', `${currentMod}-weapons-${currentDateTime}.zip`));
     const archive = archiver('zip', {
         zlib: { level: 9 } // Level 9 is the highest compression
     });
@@ -180,34 +213,65 @@ app.post('/saveData', (req, res) => {
 
     // finalize the ZIP creation
     archive.finalize();
-    
-    // res.json({ success: true });
 });
 
 
-app.post('/saveDefaultPreset', (req, res) => {
+app.post('/saveDefaultPreset', async (req, res) => {
     const timestamp = req.query.timestamp;
     const newWeaponTypes = req.body;
 
     // Modify the filename to be stored inside the default_types directory
     const filename = `./default_types/weaponDefaults_${timestamp}.json`;
 
-    fs.writeFile(filename, JSON.stringify(newWeaponTypes, null, 4), (err) => {
-        if (err) {
-            console.error('Error writing file', err);
-            return res.json({ success: false });
+    try {
+        // Get list of files in the directory
+        const files = await fsp.readdir('./default_types');
+        
+        // Filter JSON files and sort them
+        const sortedFiles = files
+            .filter(file => file.endsWith('.json'))
+            .sort((a, b) => Number(a.split('_')[1].split('.json')[0]) - Number(b.split('_')[1].split('.json')[0]));
+
+        // If there are more than 15 files, remove the oldest one
+        if (sortedFiles.length > 15) {
+            await fsp.unlink(`./default_types/${sortedFiles[0]}`);
         }
+
+        await fsp.writeFile(filename, JSON.stringify(newWeaponTypes, null, 4))
         res.json({ success: true });
-    });
+    } catch (err) {
+        console.error('Error:', err);
+        res.json({ success: false });
+    }
 });
 
-app.get('/getLatestWeaponDefaults', (req, res) => {
-    const weaponTypes = loadLatestWeaponTypes();
+app.get('/getLatestWeaponDefaults', async (req, res) => {
+    const weaponTypes = await loadLatestWeaponTypes();
     if (!weaponTypes) {
         return res.status(404).send('No weapon defaults found');
     }
     res.json(weaponTypes);
 });
+
+const BASE_DIR = __dirname;
+
+app.get('/getDirectoryContent', async (req, res) => {
+    try {
+        // Make sure to remove any leading '/' from the request path before joining.
+        const relativePath = (req.query.path || '/').replace(/^\/+/, '');
+        const dirPath = path.join(BASE_DIR, relativePath);
+        
+        const content = await fsp.readdir(dirPath, { withFileTypes: true });
+        
+        const directories = content.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
+        const files = content.filter(dirent => dirent.isFile()).map(dirent => dirent.name);
+
+        res.json({ directories, files });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

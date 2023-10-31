@@ -1,102 +1,3 @@
-class TableRow {
-    constructor(itemKey, itemData, weaponTypes) {
-        this.itemKey = itemKey;
-        this.itemData = itemData;
-        this.weaponTypes = weaponTypes;
-        this.$row = $('<tr>').addClass('table-row-hover-effect');
-    }
-
-    generateDeleteButton() {
-        const $deleteBtn = $('<button>').text('Delete').addClass('delete-btn');
-        $deleteBtn.click(() => this.$row.remove());
-        const $deleteCell = $('<td>').append($deleteBtn);
-        this.$row.append($deleteCell);
-    }
-
-    generateNameCell() {
-        const $nameCell = $('<td>').text(this.itemKey).attr('value', this.itemData.fileName);
-        this.$row.append($nameCell);
-    }
-
-    generateTextureCell() {
-        const $img = $('<img>').attr({
-            src: this.itemData.texture !== 'No texture' ? this.itemData.texture : '',
-            alt: this.itemKey,
-            width: 50
-        });
-        const $textureCell = $('<td>').append($img);
-        this.$row.append($textureCell);
-    }
-
-    generateWeaponDropdown() {
-        const $selectElem = $('<select>');
-        $.each(this.weaponTypes, (weaponType, details) => {
-            const $optionElem = $('<option>').val(weaponType).text(`${weaponType} - ${details.type}`);
-            if (this.itemData.weapon === weaponType) {
-                $optionElem.prop('selected', true);
-            }
-            $selectElem.append($optionElem);
-        });
-        const $typeCell = $('<td colspan="2">').append($selectElem);
-        this.$row.append($typeCell);
-    }
-    
-    generateAttributesCell() {
-        const weaponHeldType = this.itemData.attributes;
-        let amount = 0;
-
-        const $checkboxCell = $('<td>');
-        const $checkbox = $('<input>').attr({
-            id: 'is-two-handed',
-            type: 'checkbox'
-        });
-
-        const genAttributes = (weaponValue, type) => {
-            $.each(weaponValue, (stat, statValue) => {
-                const $input = $('<input>').attr({
-                    type: 'number',
-                    'weapon-style': type,
-                    placeholder: stat,
-                    value: statValue
-                }).addClass('number-input');
-                const $statCell = $('<td>').append($input);
-                this.$row.append($statCell);
-            });
-        };
-
-        $.each(weaponHeldType, (heldType, weaponValue) => {
-            let type = 'one-hand-number';
-            if (amount === 1) {
-                $checkbox.prop('checked', true);
-                $checkboxCell.append($checkbox);
-                this.$row.append($checkboxCell);
-                type = 'two-hand-number';
-            }
-            genAttributes(weaponValue, type);
-            amount++;
-        });
-
-        if (amount === 1) {
-            const firstType = weaponHeldType['one_hand'] || weaponHeldType['common'];
-            $.each(firstType, (key) => {
-                firstType[key] = 0;
-            });
-            $checkboxCell.append($checkbox);
-            this.$row.append($checkboxCell);
-            genAttributes(firstType, 'two-hand-number');
-        }
-    }
-
-    render() {
-        this.generateDeleteButton();
-        this.generateNameCell();
-        this.generateTextureCell();
-        this.generateWeaponDropdown();
-        this.generateAttributesCell();
-        return this.$row;
-    }
-}
-
 class App {
     constructor() {
         this.items = [];
@@ -274,17 +175,14 @@ class App {
 
     addTag(container, tagName) {
         const $tag = $('<span>').addClass('match-tag').text(tagName);
-        const $closeBtn = $('<span>').addClass('close-tag-btn').html('&times;');
-        
-        $closeBtn.click(() => {
+
+        $tag.click(() => {
             $tag.remove();
             const matchIndex = this.weaponTypes[this.currentWeapon].matches.indexOf(tagName);
             if (matchIndex > -1) {
                 this.weaponTypes[this.currentWeapon].matches.splice(matchIndex, 1);
             }
         });
-    
-        $tag.append($closeBtn);
         container.append($tag);
     }
     
@@ -378,7 +276,7 @@ class App {
                 url: '/saveData',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(output)
+                data: JSON.stringify({ output: output, currentmod: currentMod, })
             });
 
             if (response.success) {
@@ -401,7 +299,104 @@ function showNotification(message, duration = 3000) {
 
 const app = new App();
 
-document.addEventListener('DOMContentLoaded', () => {
+let currentPath = '/items'; // Hold current path
+let selectedFile = null;
+let currentMod = null
+
+async function loadDirectoryContent(directory = '/items') {
+    try {
+        $('#loadButton').prop('disabled', true);
+        selectedFile = false
+
+        const response = await $.get('/getDirectoryContent', { path: directory });
+        const $nav = $('#directoryNav').empty();
+
+        // Display current path
+        const $pathDisplay = $('<div>').addClass('path-display').text(directory);
+        $nav.append($pathDisplay);
+
+        // Back Button
+        if(directory !== '/items') {
+            const $backButton = $('<button class="btn-secondary">').attr('id', 'backButton').text('Back').on('click', () => {
+                // Navigate back to the parent directory
+                const parentPath = directory.split('/').slice(0, -1).join('/');
+                loadDirectoryContent(parentPath || '/items');
+            });
+            $nav.append($backButton);
+        }
+
+        response.directories.forEach(dir => {
+            const $dirElem = $('<div>').addClass('directory-item').text(dir);
+            $dirElem.on('click', () => {
+                if(directory === '/items') currentMod = dir
+                currentPath = directory + '/' + dir; 
+                loadDirectoryContent(currentPath);
+            });
+            $nav.append($dirElem);
+        });
+
+        response.files.forEach(file => {
+            const $fileElem = $('<div>').addClass('file-item').text(file);
+            $fileElem.on('click', () => {
+                $('.file-item.selected').removeClass('selected');
+                $fileElem.addClass('selected');
+                selectedFile = file;
+                $('#loadButton').prop('disabled', false);
+            });
+            $nav.append($fileElem);
+        });
+
+        $('#loadButton').off('click').on('click', async () => {
+            if (selectedFile) {
+                await loadItemsFromFile(currentPath, selectedFile);
+            }
+        });
+        
+        
+
+    } catch (error) {
+        console.error('Error loading directory content:', error);
+    }
+}
+
+async function loadItemsFromFile(directory, fileName) {
+    if (!fileName) return;
+    const $loader = addLoader($('#tableBody tr td:first'))
+
+    try {
+        const response = await $.ajax({
+            url: '/findFile',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ filepath: directory, filename: fileName})
+        });
+
+        if (response.success) {
+            showNotification('Files successfully loaded!');
+            app.items = response.items;
+            app.weaponTypes = response.weaponTypes;
+            app.loadWeaponDefaults();
+            app.loadData();
+        } else {
+            showNotification('Something went wrong trying to find data from the selected file. Is the file a json file inside a lang folder?', 5000);
+        }
+    } catch (error) {
+        console.error('Error loading items from file:', error);
+    } finally {
+        $loader.remove();
+    }
+}
+
+function addLoader($target) {
+    const $spinner = $('<div id="spinner" class="spinner"></div>')
+    $target.append($spinner)
+    $spinner.show()
+
+    return $spinner
+}
+
+
+document.addEventListener('DOMContentLoaded', async () => {
     fetch('/getLatestWeaponDefaults')
         .then(response => response.json())
         .then(data => {
@@ -411,7 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error("Error fetching weapon defaults:", error);
         });
+    await loadDirectoryContent();
 });
+
 
 
 $('#saveDefaultPreset').on('click', app.saveDefaultPreset.bind(app));

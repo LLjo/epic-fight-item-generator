@@ -12,15 +12,12 @@
         <h1>Item Manager</h1>
     </header>
     <div class="content">
-        <div id="item-select">
-
-            <p>Select lang file containing all items:</p>
-            <input type="file" id="jsonInput">
-            
-            <hr>
-        </div>
+        <div id="navigation-container">
+            <div id="directoryNav"></div>
+                <button id="loadButton" class="btn-primary" disabled>Load</button>
+            </div>
         <div id="weapon-attributes-settings">
-            <h2>Weapon Type Defaults <button id="saveDefaultPreset">Save default preset</button></h2>
+            <h2>Weapon Type Defaults <button id="saveDefaultPreset" class="btn-primary">Save default preset</button></h2>
             <div id="tabs">
                 <!-- Dynamically filled tab buttons by our JavaScript -->
             </div>
@@ -54,13 +51,16 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
+                    <tr><td colspan="16">No data</td></tr>
                 </tbody>
             </table>
+            
         </div>
-        <button id="saveButton">Save as data pack</button>
+        <button id="saveButton" class="btn-primary">Save as data pack</button>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
+    <script src="table.js"></script>
     <script src="main.js"></script>
 </body>
 <div id="notification" class="notification">
