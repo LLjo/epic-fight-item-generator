@@ -35,6 +35,22 @@ let parentDir;
 
 app.use(express.static('public'), bodyParser.json());
 
+const findTextureInDir = (startPath, filter, isRecursive = false) => {
+    let results = [];
+    console.log('dir', startPath)
+    fs.readdirSync(startPath).forEach(dir => {
+        const filePath = path.join(startPath, dir);
+        const stat = fs.statSync(filePath);
+        if (stat && stat.isDirectory() && isRecursive) {
+            results = results.concat(findTextureInDir(filePath, filter, isRecursive));
+        } else if (filePath.endsWith(filter)) {
+            results.push(filePath);
+        }
+    });
+    return results;
+}
+
+
 app.post('/findFile', async (req, res) => {
     const weaponTypes = loadLatestWeaponTypes();
     if (!req.body.filename) {
@@ -61,13 +77,9 @@ app.post('/findFile', async (req, res) => {
     }
 
     parentDir = path.dirname(path.dirname(foundFilePath)); 
-    const texturesDir = path.join(parentDir, 'textures/item');
-    let textures = [];
-    if (fs.existsSync(texturesDir)) {
-        textures = fs.readdirSync(texturesDir).filter(file => {
-            return fs.statSync(path.join(texturesDir, file)).isFile();
-        });
-    }
+    const texturesDir = path.join(parentDir, 'textures');
+
+    let texturePaths = findTextureInDir(texturesDir, ".png", true); 
 
     const items = JSON.parse(fs.readFileSync(foundFilePath, 'utf8'));
     const processedItems = {};
@@ -76,12 +88,12 @@ app.post('/findFile', async (req, res) => {
     
     for (const [key, value] of Object.entries(items)) {
         const identifier = key.split('.').pop();
-        const textureFileName = textures.find(texFile => texFile.split('.')[0] === identifier);
-        
+        const textureFilePath = texturePaths.find(texPath => path.basename(texPath, '.png') === identifier);
+
         // Convert image to base64
         let textureBase64 = null;
-        if (textureFileName) {
-            const imageBuffer = await fsExtra.readFile(path.join(texturesDir, textureFileName));
+        if (textureFilePath) {
+            const imageBuffer = await fsExtra.readFile(textureFilePath);
             textureBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
         }
         
@@ -160,8 +172,8 @@ app.post('/saveData', (req, res) => {
     // pipe archive data to the output file
     archive.pipe(output);
 
-    // append the "data" folder to the ZIP
-    archive.directory(rootSavePath, false);
+    // append the "data" folder (including the folder itself) to the ZIP
+    archive.directory(rootSavePath, 'data');
 
     // append the "pack.mcmeta" file to the ZIP
     archive.file(additionalFilePath, { name: 'pack.mcmeta' });
@@ -169,7 +181,7 @@ app.post('/saveData', (req, res) => {
     // finalize the ZIP creation
     archive.finalize();
     
-    res.json({ success: true });
+    // res.json({ success: true });
 });
 
 
