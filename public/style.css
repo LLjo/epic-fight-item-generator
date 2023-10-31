@@ -235,3 +235,94 @@ tr:hover {
 .th-weapon-type {
     padding: 0.5%;
 }
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.match-tag {
+    display: inline-block;
+    padding: 5px 8px 5px 12px; /* Extra padding to the left for the close icon */
+    margin: 5px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #333; /* Dark background color */
+    border-radius: 7px;
+    cursor: pointer;
+    position: relative; /* For positioning the close icon */
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; /* Transition properties */
+    border: 2px solid transparent; /* Set a transparent border for hover effect */
+    border-color: hsl(calc(360 * var(--random)), 40%, 50%); /* Colorful border on hover */
+}
+
+.match-tag:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-color: hsl(calc(360 * var(--random)), 40%, 50%); /* Colorful border on hover */
+}
+
+/* Add a close icon to the top right of each tag */
+.match-tag::before {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    color: #eee;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Generate a random number for each tag and store it in a CSS variable named --random */
+.match-tag {
+    --random: 0; /* Fallback value */
+}
+
+.match-tag:nth-child(10n+1) {
+    --random: 3.6;
+}
+
+.match-tag:nth-child(10n+2) {
+    --random: 1.2;
+}
+
+.match-tag:nth-child(10n+3) {
+    --random: 2.3;
+}
+
+.match-tag:nth-child(10n+4) {
+    --random: 5.3;
+}
+
+.match-tag span {
+    margin-left: 0.1%;
+    position: absolute;
+    top: -2px;
+
+}
+
+/* You can expand upon this by adding more nth-child selectors with different random values */
+
+/* Style for the 'x' button */
+.match-tag .close-tag {
+    position: absolute;
+    top: 50%;
+    right: 4px; /* Small right offset */
+    transform: translateY(-50%); /* Vertically center */
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly dark background for the 'x' */
+    color: white;
+    border-radius: 50%; /* Circle shape */
+    padding: 4px 6px; /* Padding around 'x' */
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.match-tag .close-tag:hover {
+    background-color: rgba(255, 0, 0, 0.7); /* Slightly bright red on hover */
+}
+
+.matches-container {
+    padding: 1%;
+}

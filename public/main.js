@@ -134,7 +134,8 @@ class App {
     
         $('.weapon-default-wrapper').each(function() {
             const $wrapper = $(this);
-            const weaponType = $wrapper.attr('id').split('-content')[0];
+            const weapon = $wrapper.attr('id').split('-content')[0];
+            const weaponStyle = $wrapper.attr('weapon-type').split('-content')[0];
     
             const attributes = {};
     
@@ -154,11 +155,16 @@ class App {
                     attributes[handType] = handAttributes;
                 }
             });
-            console.log('wea', self.weaponTypes, weaponType)
-            newWeaponTypes[weaponType] = {
-                type: weaponType,
+            const weaponMatches = [];
+            $wrapper.find('.match-tag').each(function() {
+                const clonedTag = $(this).clone(); // Clone the current element
+                clonedTag.children().remove(); // Remove child elements (e.g., the span with "x")
+                weaponMatches.push(clonedTag.text().trim()); // Get the cleaned-up text and add to the array
+            });
+            newWeaponTypes[weapon] = {
+                type: weaponStyle,
                 attributes: attributes,
-                matches: self.weaponTypes[weaponType]?.matches || []
+                matches: weaponMatches,
             };
         });
     
@@ -186,8 +192,6 @@ class App {
         const $container = $('#weapon-attributes-container').empty();
         const attributeKeys = ["damage_bonus", "speed_bonus", "armor_negation", "impact", "max_strikes"];
         const handsTypes = ['one_hand', 'two_hand'];
-
-        
     
         $.each(this.weaponTypes, (weaponType, details) => {
             const $tabButton = $('<button>').text(weaponType).addClass('tab-btn').click(() => {
@@ -199,9 +203,10 @@ class App {
             $tabs.append($tabButton);
     
             const $wrapper = $('<div>').addClass('weapon-default-wrapper').attr('id', `${weaponType}-content`).hide();
+            $wrapper.attr('weapon-type', details.type)
             const $leftColumn = $('<div>').addClass('column');
             const $rightColumn = $('<div>').addClass('column');
-            
+    
             handsTypes.forEach(handType => {
                 const $column = handType === 'one_hand' ? $leftColumn : $rightColumn;
                 $column.append(`<h4>${handType.replace("_", " ").toUpperCase()}</h4>`);
@@ -219,11 +224,17 @@ class App {
                     $column.append($inputLabel).append($input);
                 });
             });
-            
+    
+            // Tag UI Feature
+            this.currentWeapon = weaponType; // Temporarily set current weapon type
+            const $matchesContainer = $('<div>').addClass('matches-container');
+            this.generateMatchesTabContent($matchesContainer);
+            $wrapper.append($matchesContainer);
+    
             $wrapper.append($leftColumn).append($rightColumn);
             $container.append($wrapper);
         });
-
+    
         $.each(this.weaponTypes, (weaponType, details) => {
             $.each(details.attributes, (handType, attributes) => {
                 $.each(attributes, (attrKey, attrValue) => {
@@ -235,6 +246,46 @@ class App {
         
         // Default: First tab active
         $tabs.children().first().click();
+    }
+
+    generateMatchesTabContent(tabContent) {
+        const $tagsContainer = $('<div>').addClass('tags-container');
+        tabContent.append($tagsContainer);
+    
+        const $inputField = $('<input>').attr('type', 'text').attr('placeholder', 'Add weapon keyword match to look for in the lang file...');
+        tabContent.append($inputField);
+    
+        $inputField.on('keyup', (e) => {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                const inputValue = $inputField.val().trim();
+                if (inputValue && !this.weaponTypes[this.currentWeapon].matches.includes(inputValue)) {
+                    this.weaponTypes[this.currentWeapon].matches.push(inputValue);
+                    this.addTag($tagsContainer, inputValue);
+                    $inputField.val('');  // Clear the input
+                }
+            }
+        });
+    
+        // Initial population of tags from existing matches
+        this.weaponTypes[this.currentWeapon].matches.forEach(matchItem => {
+            this.addTag($tagsContainer, matchItem);
+        });
+    }
+
+    addTag(container, tagName) {
+        const $tag = $('<span>').addClass('match-tag').text(tagName);
+        const $closeBtn = $('<span>').addClass('close-tag-btn').html('&times;');
+        
+        $closeBtn.click(() => {
+            $tag.remove();
+            const matchIndex = this.weaponTypes[this.currentWeapon].matches.indexOf(tagName);
+            if (matchIndex > -1) {
+                this.weaponTypes[this.currentWeapon].matches.splice(matchIndex, 1);
+            }
+        });
+    
+        $tag.append($closeBtn);
+        container.append($tag);
     }
     
 

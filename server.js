@@ -157,7 +157,7 @@ app.post('/saveDefaultPreset', (req, res) => {
     // Modify the filename to be stored inside the default_types directory
     const filename = `./default_types/weaponDefaults_${timestamp}.json`;
 
-    fs.writeFile(filename, JSON.stringify(newWeaponTypes, null, 2), (err) => {
+    fs.writeFile(filename, JSON.stringify(newWeaponTypes, null, 4), (err) => {
         if (err) {
             console.error('Error writing file', err);
             return res.json({ success: false });
