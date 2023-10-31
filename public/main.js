@@ -3,13 +3,31 @@ class App {
         this.items = [];
         this.weaponTypes = {};
         const self = this
-        
+
         $('#loadButton').off('click').on('click', async () => {
             if (selectedFile) {
                 await self.loadItemsFromFile(currentPath, selectedFile);
             }
         });
+
+        $('.tab').on('click', function() {
+            // Remove active class from all tabs and apply to clicked one
+            $('.tab').removeClass('active');
+            $(this).addClass('active');
+    
+            const selectedTab = $(this).data('tab');
+            // Show only the attributes corresponding to the selected tab
+            if (selectedTab === 'one-hand') {
+                $('td.one-hand-number').show();
+                $('td.two-hand-number').hide();
+            } else {
+                $('td.two-hand-number').show();
+                $('td.one-hand-number').hide();
+            }
+        });
+
         $('#saveButton').on('click', this.saveData.bind(this));
+        $('#saveDefaultPreset').on('click', this.saveDefaultPreset.bind(this));
     }
 
     gatherDefaultPreset() {
@@ -225,10 +243,10 @@ class App {
     
             if (response.success) {
                 showNotification('Files successfully loaded!');
-                app.items = response.items;
-                app.weaponTypes = response.weaponTypes;
-                app.loadWeaponDefaults();
-                app.loadData();
+                this.items = response.items;
+                this.weaponTypes = response.weaponTypes;
+                this.loadWeaponDefaults();
+                this.loadData();
             } else {
                 showNotification('Something went wrong trying to find data from the selected file. Is the file a json file inside a lang folder?', 5000);
             }
@@ -372,8 +390,7 @@ function addLoader($target) {
     return $spinner
 }
 
-
-document.addEventListener('DOMContentLoaded', async () => {
+$(async () => {
     fetch('/getLatestWeaponDefaults')
         .then(response => response.json())
         .then(data => {
@@ -384,8 +401,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("Error fetching weapon defaults:", error);
         });
     await loadDirectoryContent();
-});
+
+})
 
 
 
-$('#saveDefaultPreset').on('click', app.saveDefaultPreset.bind(app));

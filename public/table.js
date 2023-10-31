@@ -14,7 +14,7 @@ class TableRow {
     }
 
     generateNameCell() {
-        const $nameCell = $('<td>').text(this.itemKey).attr('value', this.itemData.fileName);
+        const $nameCell = $('<td colspan="3">').text(this.itemKey).attr('value', this.itemData.fileName);
         this.$row.append($nameCell);
     }
 
@@ -45,31 +45,33 @@ class TableRow {
         const weaponHeldType = this.itemData.attributes;
         let amount = 0;
 
-        const $checkboxCell = $('<td>');
+        const $checkboxCell = $('<td colspan="1">');
         const $checkbox = $('<input>').attr({
             id: 'is-two-handed',
             type: 'checkbox'
         });
+		$checkboxCell.append($checkbox);
+        this.$row.append($checkboxCell);
 
-        const genAttributes = (weaponValue, type) => {
-            $.each(weaponValue, (stat, statValue) => {
-                const $input = $('<input>').attr({
-                    type: 'number',
-                    'weapon-style': type,
-                    placeholder: stat,
-                    value: statValue
-                }).addClass('number-input');
-                const $statCell = $('<td>').append($input);
-                this.$row.append($statCell);
-            });
-        };
+		const genAttributes = (weaponValue, type) => {
+			$.each(weaponValue, (stat, statValue) => {
+				const $input = $('<input>').attr({
+					type: 'number',
+					'weapon-style': type,
+					placeholder: stat,
+					value: statValue
+				}).addClass('number-input');
+				const $statCell = $(`<td colspan="2" style="${type === 'two-hand-number' ? 'display: none' : ''}"">`).addClass(type).append($input);  // Add class to the td
+				this.$row.append($statCell);
+			});
+		};
 
         $.each(weaponHeldType, (heldType, weaponValue) => {
+			
             let type = 'one-hand-number';
             if (amount === 1) {
                 $checkbox.prop('checked', true);
-                $checkboxCell.append($checkbox);
-                this.$row.append($checkboxCell);
+                
                 type = 'two-hand-number';
             }
             genAttributes(weaponValue, type);
@@ -81,8 +83,8 @@ class TableRow {
             $.each(firstType, (key) => {
                 firstType[key] = 0;
             });
-            $checkboxCell.append($checkbox);
-            this.$row.append($checkboxCell);
+            // $checkboxCell.append($checkbox);
+            // this.$row.append($checkboxCell);
             genAttributes(firstType, 'two-hand-number');
         }
     }
