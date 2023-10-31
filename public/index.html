@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet"> <!-- Added Google Font -->
-    <script src="jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <title>Item Manager</title>
 </head>
@@ -20,83 +19,50 @@
             
             <hr>
         </div>
+        <div id="weapon-attributes-settings">
+            <h2>Weapon Type Defaults <button id="saveDefaultPreset">Save default preset</button></h2>
+            <div id="tabs">
+                <!-- Dynamically filled tab buttons by our JavaScript -->
+            </div>
+            <div id="weapon-attributes-container">
+                <!-- Dynamically filled content by our JavaScript -->
+            </div>
+        </div>
         <div class="container scrollable-table">
             <table>
                 <thead>
                     <tr>
-                        <th width="5%">Action</th>
-                        <th width="10%">Item Name</th>
-                        <th width="5%">Texture</th>
-                        <th width="10%">Type</th>
-                        <th width="5%" class="th-number" >Damage Bonus</th>
-                        <th width="5%" class="th-number">Speed Bonus</th>
-                        <th width="5%" class="th-number">Armor Negation</th>
-                        <th width="5%" class="th-number">Impact</th>
-                        <th width="5%" class="th-number">Max Strikes</th>
-                        <th width="5%" style="">Two-handed</th>
-                        <th width="5%" class="th-number">Two-handed Damage Bonus</th>
-                        <th width="5%"class="th-number">Two-handed Speed Bonus</th>
-                        <th width="5%" class="th-number">Two-handed Armor Negation</th>
-                        <th width="5%" class="th-number">Two-handed Impact</th>
-                        <th width="5%" class="th-number">Two-handed Max Strikes</th>
+                        <th colspan="10" class="th-weapon-type">One-handed</th>
+                        <th colspan="6" class="th-weapon-type">Two-handed</th>  
                     </tr>
-                </thead>
-                <tbody id="tableBody">
-                </tbody>
-            </table>
-        </div>
-        <button id="saveButton">Save</button>
-    </div>
-    <script src="main.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
-</body>
-<div id="notification" class="notification">
-</div>
-</html>
-<!-- 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <header>
-        <h1>Item Manager</h1>
-    </header>
-</head>
-<body>
-    <div class="content">
-        <p>Select lang file containing all items:</p>
-        <input type="file" id="jsonInput">
-        <button id="saveButton">Save</button>
-        <hr>
-        <div class="container">
-            <table border="1">
-                <thead>
                     <tr>
                         <th>Action</th>
                         <th>Item Name</th>
                         <th>Texture</th>
-                        <th>Type</th>
+                        <th colspan="2">Type</th>
                         <th>Damage Bonus</th>
                         <th>Speed Bonus</th>
                         <th>Armor Negation</th>
                         <th>Impact</th>
                         <th>Max Strikes</th>
-                        <th style="padding-left:5rem"></th>
-                        <th >Two-handed Damage Bonus</th>
-                        <th>Two-handed Speed Bonus</th>
-                        <th>Two-handed Armor Negation</th>
-                        <th>Two-handed Impact</th>
-                        <th>Two-handed Max Strikes</th>
+                        <th>Two-handed?</th>
+                        <th>Damage Bonus</th>
+                        <th>Speed Bonus</th>
+                        <th>Armor Negation</th>
+                        <th>Impact</th>
+                        <th>Max Strikes</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                 </tbody>
             </table>
         </div>
+        <button id="saveButton">Save</button>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
     <script src="main.js"></script>
 </body>
+<div id="notification" class="notification">
+</div>
 </html>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script> -->

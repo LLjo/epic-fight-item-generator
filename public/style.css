@@ -1,3 +1,4 @@
+
 /* Reset */
 body, h1, p, table {
     margin: 0;
@@ -17,7 +18,7 @@ body {
 }
 
 header {
-    position: fixed;
+    /* position: fixed; */
     top: 0;
     width: 100%;
     background-color: #151515; /* Darker header */
@@ -34,17 +35,17 @@ header {
 }
 
 button {
-    background-color: #007BFF;
-    border: none;
+    background-color: #0000001a;
     border-radius: 5px;
     padding: 10px 20px;
+    border: 2px solid #5cd598;
     color: #FFF;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
 }
 
 button:hover {
-    background-color: #005cbf;
+    background-color: #43db8f;
     transform: scale(1.05); /* Slight growth on hover */
 }
 
@@ -61,10 +62,10 @@ thead {
     margin: 60px 20px 20px 20px;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    position: sticky; /* This will make the header sticky */
-    top: 0; /* Align the sticky header to the top */
-    z-index: 1; /* Ensure the header is above the tbody content */
+    box-shadow: 0 11px 8px rgb(0 0 0 / 21%);
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 /* Existing table style */
@@ -81,7 +82,7 @@ th {
     color:white;
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding: 1%;
+    padding: 0.1%;
 }
 
 hr {
@@ -122,11 +123,12 @@ input:focus, select:focus {
 }
 
 .scrollable-table {
-    /* max-height: calc(100vh - 150px); */
-    /* overflow-y: auto; */
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
     border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 
 #saveButton{
     margin-top: 1%;
@@ -173,4 +175,63 @@ tr:hover {
 
 .notification.show {
     top: 0;
+}
+
+.weapon-default-wrapper label {
+    margin-right: 10px;
+}
+
+.weapon-default-wrapper {
+    margin-bottom: 20px;
+}
+
+.weapon-default-wrapper h4 {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #666;
+}
+
+#tabs {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #3a3a3a;
+    border: none;
+    margin-right: 10px;
+    border-radius: 5px 5px 0 0;
+    transition: background-color 0.3s;
+}
+
+.tab-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.tab-btn.active {
+    background-color: #999999;
+    border-bottom: 1px solid #fff;
+}
+
+.column {
+    width: 50%;
+    float: left;
+    box-sizing: border-box;
+    padding: 0 20px;
+}
+
+.weapon-default-wrapper {
+    overflow: hidden; /* For floating elements */
+    margin-bottom: 20px;
+}
+
+.bl-2 {
+    border-left: 2px solid rgb(97, 97, 105);
+}
+
+.th-weapon-type {
+    padding: 0.5%;
 }
