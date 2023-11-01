@@ -297,9 +297,11 @@ app.get('/extractAssets', async (req, res) => {
         for (const jarFile of jarFiles) {
             const jarPath = path.join(itemsDirectory, jarFile);
             const destinationDirectory = path.join(itemsDirectory, path.basename(jarFile, '.jar'));
+            const parentDirName = path.basename(jarFile, '.jar').split('-')[0];
+            const parentDirPath = path.join(itemsDirectory, parentDirName);
 
             // Create a directory for extracted contents
-            await fsp.mkdir(destinationDirectory, { recursive: true });
+            await fsp.mkdir(parentDirPath, { recursive: true });
 
             // Stream the JAR file and extract relevant contents
             await new Promise((resolve, reject) => {
@@ -311,7 +313,7 @@ app.get('/extractAssets', async (req, res) => {
                         // If the entry is within the 'assets' folder
                         if (fileName.startsWith('assets/')) {
                             // Modify the destination path to place it inside the new directory
-                            const destPath = path.join(destinationDirectory, fileName.replace('assets/', ''));
+                            const destPath = path.join(parentDirPath, fileName.replace('assets/', ''));
                     
                             if (entry.type === 'Directory') {
                                 // If the entry is a directory, just ensure the directory is created
