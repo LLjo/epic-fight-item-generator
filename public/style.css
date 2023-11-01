@@ -449,3 +449,7 @@ input:focus, select:focus {
 #is-two-handed {
     height: 30%;
 }
+
+.description {
+    margin-top: 0.5%;
+}

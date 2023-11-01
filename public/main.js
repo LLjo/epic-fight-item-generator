@@ -30,29 +30,6 @@ class App {
         $('#saveDefaultPreset').on('click', this.saveDefaultPreset.bind(this));
     }
 
-    gatherDefaultPreset() {
-        const output = {};
-
-        $.each(this.weaponTypes, (weaponType, _) => {
-            output[weaponType] = { attributes: {} };
-            const handsTypes = ['one_hand', 'two_hand'];
-            handsTypes.forEach(handType => {
-                output[weaponType].attributes[handType] = {};
-
-                $(`#${weaponType}-content input[data-hand-type="${handType}"]`).each(function() {
-                    const $input = $(this);
-                    const attrKey = $input.attr('data-attribute');
-                    const attrValue = parseFloat($input.val() || 0);
-                    if (attrValue > 0) {
-                        output[weaponType].attributes[handType][attrKey] = attrValue;
-                    }
-                });
-            });
-        });
-
-        return output;
-    }
-
     async saveDefaultPreset() {
         const newWeaponTypes = {};
         const self = this
@@ -160,6 +137,12 @@ class App {
             $container.append($wrapper);
         });
     
+        this.replaceWeaponAttributesWithDefaults()
+        // Default: First tab active
+        $tabs.children().first().click();
+    }
+
+    replaceWeaponAttributesWithDefaults() {
         $.each(this.weaponTypes, (weaponType, details) => {
             $.each(details.attributes, (handType, attributes) => {
                 $.each(attributes, (attrKey, attrValue) => {
@@ -168,9 +151,6 @@ class App {
                 });
             });
         });
-        
-        // Default: First tab active
-        $tabs.children().first().click();
     }
 
     generateMatchesTabContent(tabContent) {
@@ -244,8 +224,6 @@ class App {
             if (response.success) {
                 showNotification('Files successfully loaded!');
                 this.items = response.items;
-                this.weaponTypes = response.weaponTypes;
-                this.loadWeaponDefaults();
                 this.loadData();
             } else {
                 showNotification('Something went wrong trying to find data from the selected file. Is the file a json file inside a lang folder?', 5000);
