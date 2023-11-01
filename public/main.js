@@ -363,6 +363,31 @@ async function loadDirectoryContent(directory = '/items') {
     }
 }
 
+async function extractAssets() {
+    try {
+        const response = await fetch('/extractAssets', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log(data.message);
+            // Optionally, handle success: e.g., update UI, notify the user, etc.
+        } else {
+            console.error(data.message);
+            // Handle error: e.g., show error message to the user, etc.
+        }
+    } catch (error) {
+        console.error('Error occurred while extracting assets:', error);
+        // Handle fetch errors: e.g., server down, no network, etc.
+    }
+}
+
+
 
 function addLoader($target) {
     const $spinner = $('<div id="spinner" class="spinner"></div>')
@@ -378,6 +403,7 @@ $(async () => {
         .then(data => {
             app.weaponTypes = data
             app.loadWeaponDefaults()
+            extractAssets();
         })
         .catch(error => {
             console.error("Error fetching weapon defaults:", error);

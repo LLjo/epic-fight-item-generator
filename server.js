@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const fsExtra = require('fs-extra');
 const open  = require('open');
 const archiver = require('archiver');
+const unzipper = require('unzipper');
 
 const app = express();
 const PORT = 3000;
@@ -88,13 +89,19 @@ app.post('/findFile', async (req, res) => {
     parentDir = path.dirname(path.dirname(foundFilePath)); 
     const texturesDir = path.join(parentDir, 'textures');
 
-    const texturePaths = await findTextureInDir(texturesDir, ".png", true); 
-    const items = JSON.parse(await fsp.readFile(foundFilePath, 'utf8'));
-    const processedItems = {};
-    const defaultWeapon = Object.keys(weaponTypes)[0];
-    const defaultType = weaponTypes[defaultWeapon].type;
-
+    let texturePaths
+    let items
+    let processedItems
+    let defaultWeapon
+    let defaultType
+    
     try {
+        texturePaths = await findTextureInDir(texturesDir, ".png", true); 
+        items = JSON.parse(await fsp.readFile(foundFilePath, 'utf8'));
+        processedItems = {};
+        defaultWeapon = Object.keys(weaponTypes)[0];
+        defaultType = weaponTypes[defaultWeapon].type;
+
         for (const [key, value] of Object.entries(items)) {
             const identifier = key.split('.').pop();
             const textureFilePath = texturePaths.find(texPath => path.basename(texPath, '.png') === identifier);
@@ -275,6 +282,62 @@ app.get('/getDirectoryContent', async (req, res) => {
     }
 });
 
+
+app.get('/extractAssets', async (req, res) => {
+    const itemsDirectory = path.join(BASE_DIR, 'items');
+    const jarFiles = (await fsp.readdir(itemsDirectory)).filter(file => path.extname(file).toLowerCase() === '.jar');
+
+    // If no JAR files are found, return an error
+    if (jarFiles.length === 0) {
+        return res.status(404).json({ success: false, message: 'No jar files found in /items' });
+    }
+
+    try {
+        // Process each JAR file
+        for (const jarFile of jarFiles) {
+            const jarPath = path.join(itemsDirectory, jarFile);
+            const destinationDirectory = path.join(itemsDirectory, path.basename(jarFile, '.jar'));
+            const parentDictName = destinationDirectory.split('-')[0]
+
+            // Create a directory for extracted contents
+            await fsp.mkdir(parentDictName, { recursive: true });
+
+            // Stream the JAR file and extract relevant contents
+            await new Promise((resolve, reject) => {
+                const stream = fsOriginal.createReadStream(jarPath)
+                    .pipe(unzipper.Parse())
+                    .on('entry', function(entry) {
+                        const fileName = entry.path;
+                    
+                        // If the entry is within the 'assets' folder
+                        if (fileName.startsWith('assets/')) {
+                            // Modify the destination path to place it inside the new directory
+                            const destPath = path.join(parentDictName, fileName.replace('assets/', ''));
+                    
+                            if (entry.type === 'Directory') {
+                                // If the entry is a directory, just ensure the directory is created
+                                fsExtra.ensureDirSync(destPath);
+                                entry.autodrain();
+                            } else {
+                                // If the entry is a file, ensure the parent directory exists and then extract it
+                                fsExtra.ensureDirSync(path.dirname(destPath));
+                                entry.pipe(fsOriginal.createWriteStream(destPath));
+                            }
+                        } else {
+                            entry.autodrain();
+                        }
+                    });
+
+                stream.on('finish', resolve);
+                stream.on('error', reject);
+            });
+        }
+
+        res.json({ success: true, message: 'Assets extracted successfully!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error extracting assets', error: error.message });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
