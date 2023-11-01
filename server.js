@@ -64,7 +64,7 @@ app.post('/findFile', async (req, res) => {
     }
     
     // Combine the script directory with the relative path received from the frontend
-    const absoluteFilePath = path.join(__dirname, filepath);
+    const absoluteFilePath = path.join(process.cwd(), filepath);
     const findFileInDir = async (startPath, filter) => {
         let result = null;
         const dirs = await fsp.readdir(startPath);
@@ -148,7 +148,7 @@ app.post('/saveData', async (req, res) => {
     const data = req.body;
     const outputData = data.output
     const currentMod = data.currentmod
-    const modDataPackSaveDir = path.join(__dirname, 'data_pack_output', currentMod)
+    const modDataPackSaveDir = path.join(process.cwd(), 'data_pack_output', currentMod)
     // Save to the project's /data_pack_output folder
 
     try {
@@ -256,7 +256,7 @@ app.get('/getLatestWeaponDefaults', async (req, res) => {
     res.json(weaponTypes);
 });
 
-const BASE_DIR = __dirname;
+const BASE_DIR = process.cwd();
 
 app.get('/getDirectoryContent', async (req, res) => {
     try {
