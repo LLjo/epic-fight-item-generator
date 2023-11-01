@@ -112,7 +112,9 @@ class App {
             handsTypes.forEach(handType => {
                 const $column = handType === 'one_hand' ? $leftColumn : $rightColumn;
                 $column.append(`<h4>${handType.replace("_", " ").toUpperCase()}</h4>`);
+                const $holder = $('<div>').addClass('holder')
                 $.each(attributeKeys, (index, attrKey) => {
+                    const $inputHolder = $('<div class="input-holder">')
                     const $inputLabel = $('<label>').text(attrKey);
                     const $input = $('<input>').attr({
                         type: 'number',
@@ -123,8 +125,10 @@ class App {
                     }).addClass('default-attribute-input');
                     
                     $input.on('input', this.updateWeaponAttributes.bind(this));
-                    $column.append($inputLabel).append($input);
+                    $inputHolder.append($inputLabel).append($input);
+                    $holder.append($inputHolder);
                 });
+                $column.append($holder);
             });
     
             // Tag UI Feature

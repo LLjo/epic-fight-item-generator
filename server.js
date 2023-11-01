@@ -99,6 +99,9 @@ app.post('/findFile', async (req, res) => {
             const identifier = key.split('.').pop();
             const textureFilePath = texturePaths.find(texPath => path.basename(texPath, '.png') === identifier);
             let textureBase64 = null;
+
+            if (identifier === 'tooltip' || key.split('.')[0] !== 'item') continue
+
             if (textureFilePath) {
                 const imageBuffer = await fsExtra.readFile(textureFilePath);
                 textureBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
