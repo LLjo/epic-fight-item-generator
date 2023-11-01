@@ -406,17 +406,21 @@ function addLoader($target) {
 }
 
 $(async () => {
-    fetch('/getLatestWeaponDefaults')
+    const $loader = addLoader($('#directoryNav'))
+    await fetch('/getLatestWeaponDefaults')
         .then(response => response.json())
-        .then(data => {
+        .then(async (data) => {
             app.weaponTypes = data
             app.loadWeaponDefaults()
-            extractAssets();
+            
+            await extractAssets();
+            
         })
         .catch(error => {
             console.error("Error fetching weapon defaults:", error);
         });
     await loadDirectoryContent();
+    $loader.remove()
 
 })
 
