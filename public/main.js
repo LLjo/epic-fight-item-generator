@@ -348,8 +348,8 @@ async function loadDirectoryContent(directory = '/items') {
         response.directories.forEach(dir => {
             const $dirElem = $('<div>').addClass('directory-item').text(dir);
             $dirElem.on('click', () => {
-                if(directory === '/items') currentMod = dir
                 currentPath = directory + '/' + dir; 
+                if (currentPath.split('/').length === 4) currentMod = dir
                 loadDirectoryContent(currentPath);
             });
             $nav.append($dirElem);
