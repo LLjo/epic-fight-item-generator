@@ -26,6 +26,14 @@ class App {
             }
         });
 
+        $('#reloadButton').off('click').on('click', async () => { 
+            $('#directoryNav')
+            const $loader = addLoader($('#directoryNav'))
+            await extractAssets();
+            await loadDirectoryContent();
+            $loader.remove()
+        })
+
         $('#saveButton').on('click', this.saveData.bind(this));
         $('#saveDefaultPreset').on('click', this.saveDefaultPreset.bind(this));
     }
@@ -390,7 +398,7 @@ async function extractAssets() {
 
 
 function addLoader($target) {
-    const $spinner = $('<div id="spinner" class="spinner"></div>')
+    const $spinner = $('<div class="spinner-background"><div id="spinner" class="spinner"></div></div>')
     $target.append($spinner)
     $spinner.show()
 
