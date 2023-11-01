@@ -155,7 +155,8 @@ app.post('/saveData', async (req, res) => {
     const data = req.body;
     const outputData = data.output
     const currentMod = data.currentmod
-    const modDataPackSaveDir = path.join(process.cwd(), 'data_pack_output', currentMod)
+    const currentModFolderName = data.currentModFolderName
+    const modDataPackSaveDir = path.join(process.cwd(), 'data_pack_output', currentModFolderName)
     // Save to the project's /data_pack_output folder
 
     try {

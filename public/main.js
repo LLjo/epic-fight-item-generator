@@ -296,7 +296,7 @@ class App {
                 url: '/saveData',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ output: output, currentmod: currentMod, })
+                data: JSON.stringify({ output: output, currentmod: currentMod, currentModFolderName: currentModFolderName, })
             });
 
             if (response.success) {
@@ -322,6 +322,7 @@ const app = new App();
 let currentPath = '/items'; // Hold current path
 let selectedFile = null;
 let currentMod = null
+let currentModFolderName = null
 
 async function loadDirectoryContent(directory = '/items') {
     try {
@@ -349,6 +350,7 @@ async function loadDirectoryContent(directory = '/items') {
             const $dirElem = $('<div>').addClass('directory-item').text(dir);
             $dirElem.on('click', () => {
                 currentPath = directory + '/' + dir; 
+                if (directory === '/items') currentModFolderName = dir
                 if (currentPath.split('/').length === 4) currentMod = dir
                 loadDirectoryContent(currentPath);
             });
