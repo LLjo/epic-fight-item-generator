@@ -1,8 +1,8 @@
 class WeaponManager {
-    constructor() {
+    constructor(parentApp) {
         this.currentWeapon = null;
         this.weaponTypes = []
-
+		this.parentApp = parentApp;
         // Initialize event listeners
         this.initEventListeners();
     }

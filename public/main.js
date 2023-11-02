@@ -1,12 +1,30 @@
 class App {
-    constructor(weaponManager, directoryHandler) {
-        this.weaponManager = weaponManager;
-        this.directoryHandler = directoryHandler;
-        this.items = this.directoryHandler.items;
-        this.weaponTypes = this.weaponManager.weaponTypes;
-        
-        const self = this
+    constructor() {
+        this.weaponManager = new WeaponManager(this);
+        this.directoryHandler = new DirectoryHandler(this);
+
         $('#saveButton').on('click', this.saveData.bind(this));
+
+        this.initChildren()
+    }
+
+    async initChildren() {
+        const $loader = addLoader($('#directoryNav'));
+        await this.weaponManager.fetchWeaponDefaults()
+        this.weaponManager.loadWeaponDefaults()
+        await this.directoryHandler.loadDirectoryContent();
+        await this.directoryHandler.extractAssets(); // Here's the call you mentioned
+
+        $loader.remove()
+    }
+
+    loadTable(items, weaponTypes) {
+        const weaponManager = this.weaponManager
+        const $tableBody = $('#tableBody').empty();
+        $.each(items, (key, value) => {
+            const tableRow = new TableRow(key, value, weaponManager.weaponTypes); // Assuming TableRow is a class in your ecosystem
+            $tableBody.append(tableRow.render());
+        });
     }
 
     async saveData() {
@@ -82,14 +100,5 @@ function addLoader($target) {
 
 
 $(async () => {
-    const weaponManager = new WeaponManager();
-    await weaponManager.fetchWeaponDefaults()
-    weaponManager.loadWeaponDefaults()
-    const directoryHandler = new DirectoryHandler();
-    const app = new App(weaponManager, directoryHandler);
-
-    const $loader = addLoader($('#directoryNav'));
-    await directoryHandler.loadDirectoryContent();
-    await directoryHandler.extractAssets(); // Here's the call you mentioned
-    $loader.remove();
+    const app = new App();
 });

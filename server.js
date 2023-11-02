@@ -59,7 +59,7 @@ const findTextureInDir = async (startPath, filter, isRecursive = false) => {
 
 app.post('/findFile', async (req, res) => {
     const weaponTypes = await loadLatestWeaponTypes();
-    const { filepath, filename, currentmod } = req.body;
+    const { filepath, filename, currentModItemsPath, mode } = req.body;
     if (!filename || !filepath) {
         return res.status(400).send('Filepath or Filename not provided');
     }
@@ -146,17 +146,28 @@ app.post('/findFile', async (req, res) => {
 });
 
 
-
+const getCurrentDateTime = () => {
+    const date = new Date();
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');  // +1 because months are 0-based in JS
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}_${hours}_${minutes}_${seconds}`;
+}
 
 app.post('/saveData', async (req, res) => {
-    const currentDateTime = String((new Date()).getTime());
+    const currentDateTime = getCurrentDateTime();
     
     
     const data = req.body;
     const outputData = data.output
     const currentMod = data.currentmod
     const currentModFolderName = data.currentModFolderName
-    const modDataPackSaveDir = path.join(process.cwd(), 'data_pack_output', currentModFolderName)
+    const modDataPackSaveDir = path.join(process.cwd(), 'data_pack_output', currentModFolderName, data.currentmod)
     // Save to the project's /data_pack_output folder
 
     try {
@@ -340,6 +351,79 @@ app.get('/extractAssets', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error extracting assets', error: error.message });
     }
 });
+
+
+
+app.post('/findFilesAndTextures', async (req, res) => {
+    const { filepath, filename, currentModItemsPath, currentMod } = req.body;
+
+    if (!filepath) {
+        return res.status(400).send('Filepath or Filename not provided');
+    }
+    
+    // Combine the script directory with the relative path received from the frontend
+    const absoluteFilePath = path.join(process.cwd(), filepath);
+
+    const findFilesInDir = async (startPath, filter) => {
+        let results = [];
+        const dirs = await fsp.readdir(startPath);
+        for (const dir of dirs) {
+            const filePath = path.join(startPath, dir);
+            const stat = await fsp.stat(filePath);
+            if (stat && stat.isDirectory()) {
+                results = results.concat(await findFilesInDir(filePath, filter));
+            } else if (dir.endsWith(filter)) {
+                results.push(filePath);
+            }
+        }
+        return results;
+    }
+
+    const foundFilePaths = await findFilesInDir(absoluteFilePath, ".json");
+    parentDir = foundFilePaths[0].split('-')[0] + 'edited'
+    
+    if (!foundFilePaths.length) {
+        return res.status(404).send(`No JSON files found in ${absoluteFilePath} directory`);
+    }
+
+    const texturesDir = path.join(process.cwd(), '/items/', currentModItemsPath + '/' + currentMod, '/textures');
+    const texturePaths = await findFilesInDir(texturesDir, ".png");
+
+    let processedItems = {};
+
+    for (const filePath of foundFilePaths) {
+        try {
+            const item = JSON.parse(await fsp.readFile(filePath, 'utf8'));
+            const identifier = path.basename(filePath, '.json');
+            const textureFilePath = texturePaths.find(texPath => path.basename(texPath, '.png') === identifier);
+            let textureBase64 = null;
+
+            if (textureFilePath) {
+                const imageBuffer = await fsExtra.readFile(textureFilePath);
+                textureBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+            }
+
+            processedItems[item.name || identifier] = {
+                ...item,
+                texture: textureBase64 || 'No texture',
+                fileName: identifier,
+            };
+
+        } catch (err) {
+            console.error(`Error processing ${filePath}:`, err.message);
+        }
+    }
+
+    res.json({
+        success: true,
+        items: processedItems,
+    });
+});
+
+
+
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
