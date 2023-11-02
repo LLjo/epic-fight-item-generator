@@ -1,6 +1,6 @@
 ﻿# epic-fight-item-generator
 
-This is an item compability generator for the minecraft mod Epic Fight to easily generate data packs for other mods weapons. Made as a web app.
+This is an item compatibility generator for the minecraft mod Epic Fight to easily generate data packs for other mods weapons. Made as a web app.
 
 Start:
 - Start the server pressing the node-win file. It should open up a page in your web browser (Works best on chrome).
