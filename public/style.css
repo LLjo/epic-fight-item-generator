@@ -494,3 +494,18 @@ input:focus, select:focus {
     display: flex;
     gap: 1%;
 }
+
+#nav-tabs {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+}
+#nav-tabs .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #3a3a3a;
+    border: none;
+    margin-right: 10px;
+    border-radius: 5px 5px 0 0;
+    transition: background-color 0.3s;
+
+}
