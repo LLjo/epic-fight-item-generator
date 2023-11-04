@@ -7,9 +7,6 @@ class DirectoryHandler {
 		this.currentTab = 'items'
 		this.parentApp = parentApp;
 
-        // Initial tab setup
-        this.initializeTabs();
-
         // Bindings
         this.loadItemsFromFile = this.loadItemsFromFile.bind(this);
 
@@ -36,6 +33,7 @@ class DirectoryHandler {
         });
 
         $('#itemsTab').on('click', () => {
+            $('#navigation-container .description').text('Navigate to the lang folder of the mod, select and load a json file.')
 			$('#dataPackOutputsTab').removeClass('active')
 			$('#itemsTab').addClass('active')
 			this.currentTab = 'items'
@@ -45,6 +43,7 @@ class DirectoryHandler {
         });
 
         $('#dataPackOutputsTab').on('click', () => {
+            $('#navigation-container .description').text('Navigate to the folder containing your converted json files, press "Load files in folder".')
 			$('#itemsTab').removeClass('active')
 			$('#dataPackOutputsTab').addClass('active')
 			$('#loadEditedFiles').text('Load files in folder')
@@ -55,16 +54,7 @@ class DirectoryHandler {
             this.loadDirectoryContent('/data_pack_output');
         });
     }
-
-    initializeTabs() {
-        const $tabsContainer = $("#nav-tabs");
-        const $itemsTab = $('<div>').attr('id', 'itemsTab').addClass('tab-btn active').text('items');
-        const $dataPackOutputsTab = $('<div>').attr('id', 'dataPackOutputsTab').addClass('tab-btn').text('data_pack_outputs');
-
-        $tabsContainer.append($itemsTab, $dataPackOutputsTab);
-    }
-
-	async loadDirectoryContent(directory = '/items') {
+    async loadDirectoryContent(directory = '/items') {
 		try {
 			$('#loadEditedFiles').attr('disabled', true)
 			$('#loadButton').prop('disabled', true);
@@ -78,7 +68,7 @@ class DirectoryHandler {
 			$nav.append($pathDisplay);
 	
 			// Back Button
-			if(directory !== '/items') {
+			if(directory !== '/items' && directory !== '/data_pack_output') {
 				const $backButton = $('<button class="btn-secondary">').attr('id', 'backButton').text('Back').on('click', () => {
 					const parentPath = directory.split('/').slice(0, -1).join('/');
 					this.loadDirectoryContent(parentPath || '/items');

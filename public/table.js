@@ -32,7 +32,7 @@ class TableRow {
         const $selectElem = $('<select>');
         $.each(this.weaponTypes, (weaponType, details) => {
             const $optionElem = $('<option>').val(weaponType).text(`${weaponType} - ${details.type}`);
-            if (this.itemData.weapon === weaponType) {
+            if ((this.itemData?.type ?? this.itemData.weapon) === weaponType) {
                 $optionElem.prop('selected', true);
             }
             $selectElem.append($optionElem);
@@ -54,6 +54,14 @@ class TableRow {
         this.$row.append($checkboxCell);
 
 		const genAttributes = (weaponValue, type) => {
+            const activeTabText = $('.th-weapon-type.active').attr('data-tab');
+            let activeTabInputs = false
+            if (activeTabText === 'two-hand' && type === 'two-hand-number') {
+                activeTabInputs = true
+            } else if (activeTabText === 'one-hand' && type === 'one-hand-number') {
+                activeTabInputs = true
+            }
+            console.log('active', activeTabText);
 			$.each(weaponValue, (stat, statValue) => {
 				const $input = $('<input>').attr({
 					type: 'number',
@@ -61,7 +69,7 @@ class TableRow {
 					placeholder: stat,
 					value: statValue
 				}).addClass('number-input');
-				const $statCell = $(`<td colspan="2" style="${type === 'two-hand-number' ? 'display: none' : ''}"">`).addClass(type).append($input);  // Add class to the td
+				const $statCell = $(`<td colspan="2" style="${activeTabInputs ? '' : 'display: none'}"">`).addClass(type).append($input);  // Add class to the td
 				this.$row.append($statCell);
 			});
 		};

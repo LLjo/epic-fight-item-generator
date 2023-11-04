@@ -499,6 +499,7 @@ input:focus, select:focus {
     display: flex;
     border-bottom: 1px solid #ccc;
 }
+
 #nav-tabs .tab {
     padding: 10px 20px;
     cursor: pointer;
