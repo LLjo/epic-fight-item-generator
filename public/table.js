@@ -32,7 +32,7 @@ class TableRow {
         const $selectElem = $('<select>');
         $.each(this.weaponTypes, (weaponType, details) => {
             const $optionElem = $('<option>').val(weaponType).text(`${weaponType} - ${details.type}`);
-            if ((this.itemData?.type ?? this.itemData.weapon) === weaponType) {
+            if (this.itemData?.type === weaponType || this.itemData.weapon === weaponType) {
                 $optionElem.prop('selected', true);
             }
             $selectElem.append($optionElem);
